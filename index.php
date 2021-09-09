@@ -10,22 +10,60 @@ $koneksi = mysqli_connect($server, $user, $pas, $database) or die(mysqli_error($
 
 //jika button diklik
 if (isset($_POST['bsimpan'])) {
-    $simpan = mysqli_query($koneksi, "INSERT INTO tmhs(nim, nama, alamat, prodi)
-                                     VALUES ('$_POST[tnim]',
-                                     '$_POST[tnama]',
-                                     '$_POST[talamat]',
-                                     '$_POST[tprodi]')
-                                     ");
-    if ($simpan) {
-        echo "<script>
-                alert('Data berhasil disimpan!');
-                document.location = 'index.php';
+    if ($_GET['hal']) {
+        //data akan diedit
+        $edit = mysqli_query($koneksi, "UPDATE tmhs set 
+                                            nim = '@$_POST[tnim]',
+                                            nama = '@$_POST[tnama]',
+                                            alamat '@$_POST[talamat]',
+                                            prodi = '@$_POST[tprodi]'
+                                        WHERE id_mhs = '@$_GET[id]'
+                            ");
+        if ($edit) {
+            echo "<script>alert('Data berhasil diedit!');
+            document.location = 'index.php';
             </script>";
+        } else {
+            echo "<script>alert('Data tidak bisa diedit!');
+            document.location = 'index.php';
+            </script>";
+        }
+
     } else {
-        echo "<script>
-        alert('Data tidak tersimpan!');
-        document.location = 'index.php';
-    </script>";
+        //data akan disimpan baru
+        $simpan = mysqli_query($koneksi, "INSERT INTO tmhs(nim, nama, alamat, prodi)
+        VALUES ('$_POST[tnim]',
+        '$_POST[tnama]',
+        '$_POST[talamat]',
+        '$_POST[tprodi]')
+        ");
+        if ($simpan) {
+            echo "<script>alert('Data berhasil disimpan!');
+            document.location = 'index.php';
+            </script>";
+        } else {
+            echo "<script>alert('Data tidak tersimpan!');
+            document.location = 'index.php';
+            </script>";
+        }
+    }
+}
+
+
+//pengujian hapus atau edit saat diklik
+if (isset($_GET['hal'])) {
+    //pengujian data yang diedit 
+    if ($_GET['hal'] == "edit") {
+        //tampil data akan diedit 
+        $tampil = mysqli_query($koneksi, "SELECT * FROM tmhs WHERE id_mhs = '$_GET[id]' ");
+        $data = mysqli_fetch_array($tampil);
+        if ($data) {
+            //jika data ditemukan 
+            $vnim = $data['nim'];
+            $vnama = $data['nama'];
+            $valamat = $data['alamat'];
+            $vprodi = $data['prodi'];
+        }
     }
 }
 
@@ -57,20 +95,20 @@ if (isset($_POST['bsimpan'])) {
                     <form method="post" action="">
                         <div class="form-group mt-2">
                             <label class="mt-2">NIM</label>
-                            <input type="text" name="tnim" class="form-control mt-2" placeholder="Masukan NIM" required>
+                            <input type="text" name="tnim" value="<?= $vnim ?>" class="form-control mt-2" placeholder="Masukan NIM" required>
                         </div>
                         <div class="form-group mt-2">
                             <label class="mt-2">Nama</label>
-                            <input type="text" name="tnama" class="form-control mt-2" placeholder="Masukan Nama" required>
+                            <input type="text" name="tnama" value="<?= $vnama ?>" class="form-control mt-2" placeholder="Masukan Nama" required>
                         </div>
                         <div class="form-group mt-2">
                             <label class="mt-2">Alamat</label>
-                            <textarea name="talamat" class="form-control mt-2" placeholder="Masukan Alamat" required></textarea>
+                            <textarea name="talamat" class="form-control mt-2" placeholder="Masukan Alamat" required><?= $valamat ?></textarea>
                         </div>
                         <div class="form-group mt-2">
                             <label class="mt-2">Program Studi</label>
-                            <select class="form-control" name="tprodi">
-                                <option></option>
+                            <select class="form-control" name="tprodi" value="<?= $vprodi ?>">
+                                <option value="<?= $vprodi ?>"> <?= $vprodi ?> </option>
                                 <option value="D3-MI">D3-MI</option>
                                 <option value="S1-ST">S1-ST</option>
                                 <option value="S1-TI">S1-TI</option>
@@ -115,7 +153,7 @@ if (isset($_POST['bsimpan'])) {
                                 <td><?= $data['prodi'] ?></td>
                                 <td>
                                     <a href="" class="btn btn-danger">Hapus</a>
-                                    <a href="" class="btn btn-warning">Edit</a>
+                                    <a href="index.php?hal=edit&id=<?= $data['id_mhs'] ?>" class="btn btn-warning">Edit</a>
                                 </td>
                             </tr>
 
